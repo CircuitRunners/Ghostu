@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.pedropathing.api.PoseFactory;
+import com.pedropathing.api.Paths;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.localization.Pose;
-import com.pedropathing.pathgen.BezierLine;
-import com.pedropathing.pathgen.PathChain;
-import com.pedropathing.pathgen.Point;
+import com.pedropathing.math.Pose;
+import com.pedropathing.paths.Path;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -24,9 +24,16 @@ public class Auto extends LinearOpMode {
     private Follower follower;
     private Limelight3A limelight;
 
-    private final Pose startPose = new Pose(0, 0, Math.toRadians(0));
-    private final Pose intakePose = new Pose(0, 24, Math.toRadians(0));
-    private final Pose scorePose = new Pose(0, 36, Math.toRadians(0));
+
+    private static final double AUTO_MAX_TURN_POWER = 0.55;
+    private static final double AUTO_MAX_TRANSLATION_POWER = 0.70;
+
+
+    private final PoseFactory p = PoseFactory.degrees();
+
+    private final Pose startPose = p.of(0, 0, 0);
+    private final Pose intakePose = p.of(0, 24, 0);
+    private final Pose scorePose = p.of(0, 36, 0);
 
     @Override
     public void runOpMode() {
@@ -36,12 +43,11 @@ public class Auto extends LinearOpMode {
         transfer = new Transfer(robot);
         shooter = new Shooter(robot);
 
-        // Load Pedro 3 Constants and initialize Follower
-        Constants.setConstants();
-        follower = new Follower(hardwareMap);
-        follower.setStartingPose(startPose);
 
-        // Initialize Limelight 3A
+        follower = Constants.create(hardwareMap);
+        follower.setPose(startPose);
+
+
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0);
         limelight.start();
@@ -59,36 +65,37 @@ public class Auto extends LinearOpMode {
         robot.stopAll();
     }
 
-    private void runRoutine() {
-        // Build Pedro 3 PathChain using BezierLine paths
-        PathChain driveToScore = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(startPose), new Point(intakePose)))
-                .setLinearHeadingInterpolation(startPose.getHeading(), intakePose.getHeading())
-                .addPath(new BezierLine(new Point(intakePose), new Point(scorePose)))
-                .setLinearHeadingInterpolation(intakePose.getHeading(), scorePose.getHeading())
-                .build();
+    private Path driveToScore() {
+        return Paths.path(
+                Paths.line(startPose, intakePose).linear(startPose, intakePose),
+                Paths.line(intakePose, scorePose).linear(intakePose, scorePose)
+        );
+    }
 
+    private void runRoutine() {
         intake.setIntakePosition();
         holdMechanism(250);
         shooter.setPower(0);
 
-        // Follow path chain
-        follower.followPath(driveToScore, true);
+
+        follower.follow(driveToScore());
         while (opModeIsActive() && follower.isBusy()) {
             robot.clearBulkCache();
             follower.update();
             shooter.update();
 
-            Pose currentPose = follower.getPose();
-            telemetry.addData("X / Y", "%.2f / %.2f", currentPose.getX(), currentPose.getY());
-            telemetry.addData("Heading", "%.1f", Math.toDegrees(currentPose.getHeading()));
+            Pose currentPose = follower.pose();
+            telemetry.addData("X / Y", "%.2f / %.2f", currentPose.x(), currentPose.y());
+            telemetry.addData("Heading", "%.1f", Math.toDegrees(currentPose.heading()));
             telemetry.update();
         }
 
-        // Align with target using Limelight 3A
+        follower.stop();
+
+
         alignWithLimelight(0.0, 0.0, 2000);
 
-        // Execute scoring sequence
+
         transfer.setTransferPosition();
         holdMechanism(250);
         transfer.setScorePosition();
@@ -109,7 +116,7 @@ public class Auto extends LinearOpMode {
 
         while (opModeIsActive() && timer.milliseconds() < timeoutMs) {
             robot.clearBulkCache();
-            follower.update();
+            follower.update(); // keeps pose tracking alive
             shooter.update();
 
             LLResult result = limelight.getLatestResult();
@@ -126,8 +133,8 @@ public class Auto extends LinearOpMode {
                     return true;
                 }
 
-                double turn = Range.clip(headingError * KpAim, -Config.AUTO_MAX_TURN_POWER, Config.AUTO_MAX_TURN_POWER);
-                double forward = Range.clip(distanceError * KpDistance, -Config.AUTO_MAX_TRANSLATION_POWER, Config.AUTO_MAX_TRANSLATION_POWER);
+                double turn = Range.clip(headingError * KpAim, -AUTO_MAX_TURN_POWER, AUTO_MAX_TURN_POWER);
+                double forward = Range.clip(distanceError * KpDistance, -AUTO_MAX_TRANSLATION_POWER, AUTO_MAX_TRANSLATION_POWER);
 
                 drive.drive(0, forward, -turn, false, 1.0);
 
