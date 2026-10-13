@@ -29,15 +29,7 @@ public class Constants {
             }
     );
 
-    // Localizer: two odometry pods + Control Hub IMU.
-    // Run the "Two Wheel Tuner" in AutoTune (http://192.168.43.1:10158), open the Java tab,
-    // and paste the generated values in here. It produces: encoder names, IMU name/orientation,
-    // forward/strafe ticks-to-inches, x/y pod directions, and x/y pod offsets.
-    //
-    // Starting estimate for ticks-to-inches from your Config (pi * 32mm / 2000 ticks):
-    //   about 0.0019789 inches per tick (let the tuner refine it).
-    // Your "odoParallel" / "odoPerpendicular" names are the forward and strafe encoder names,
-    // and they must be the hardware-map names of the MOTOR PORTS the encoders plug into.
+
     public static TwoWheelConfig localizerConfig = new TwoWheelConfig(
             c -> {
                 // PASTE AutoTune OUTPUT HERE
