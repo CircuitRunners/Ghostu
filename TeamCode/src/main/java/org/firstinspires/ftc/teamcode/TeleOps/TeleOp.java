@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.FieldFence;
 import org.firstinspires.ftc.teamcode.Localizer;
 import org.firstinspires.ftc.teamcode.ObstacleAvoidance;
 import org.firstinspires.ftc.teamcode.Config.Robot;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Transfer;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "BIOBUZZ TeleOp", group = "Competition")
 public class TeleOp extends OpMode {
