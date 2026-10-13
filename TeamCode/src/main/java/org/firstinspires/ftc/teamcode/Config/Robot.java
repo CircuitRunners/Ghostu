@@ -18,10 +18,12 @@ import java.util.List;
 public class Robot {
     public DcMotorEx frontLeft, frontRight, backLeft, backRight;
     public DcMotorEx outtakeLeft, outtakeRight;
+    public DcMotorEx transferLeft, transferRight;
     public DcMotorEx odoParallel, odoPerpendicular;
 
     public Servo axon1, axon2, axon3, axon4;
     public Servo servo25_1, servo25_2, servo25_3;
+    public Servo blockerLeft, blockerRight;
 
     public IMU imu;
     public ColorSensor color;
@@ -43,6 +45,9 @@ public class Robot {
         outtakeLeft = required(hardwareMap, DcMotorEx.class, Config.OUTTAKE_LEFT);
         outtakeRight = required(hardwareMap, DcMotorEx.class, Config.OUTTAKE_RIGHT);
 
+        transferLeft = required(hardwareMap, DcMotorEx.class, Config.TRANSFER_LEFT);
+        transferRight = required(hardwareMap, DcMotorEx.class, Config.TRANSFER_RIGHT);
+
         odoParallel = required(hardwareMap, DcMotorEx.class, Config.ODO_PARALLEL);
         odoPerpendicular = required(hardwareMap, DcMotorEx.class, Config.ODO_PERPENDICULAR);
 
@@ -53,6 +58,9 @@ public class Robot {
         servo25_1 = required(hardwareMap, Servo.class, Config.SERVO_25_1);
         servo25_2 = required(hardwareMap, Servo.class, Config.SERVO_25_2);
         servo25_3 = required(hardwareMap, Servo.class, Config.SERVO_25_3);
+
+        blockerLeft = required(hardwareMap, Servo.class, Config.BLOCKER_LEFT);
+        blockerRight = required(hardwareMap, Servo.class, Config.BLOCKER_RIGHT);
 
         imu = required(hardwareMap, IMU.class, Config.IMU);
         color = required(hardwareMap, ColorSensor.class, Config.COLOR);
@@ -65,6 +73,9 @@ public class Robot {
         outtakeLeft.setDirection(Config.REVERSE_OUTTAKE_LEFT ? DcMotor.Direction.REVERSE : DcMotor.Direction.FORWARD);
         outtakeRight.setDirection(Config.REVERSE_OUTTAKE_RIGHT ? DcMotor.Direction.REVERSE : DcMotor.Direction.FORWARD);
 
+        transferLeft.setDirection(Config.REVERSE_TRANSFER_LEFT ? DcMotor.Direction.REVERSE : DcMotor.Direction.FORWARD);
+        transferRight.setDirection(Config.REVERSE_TRANSFER_RIGHT ? DcMotor.Direction.REVERSE : DcMotor.Direction.FORWARD);
+
         configureMotor(frontLeft, DcMotor.RunMode.RUN_USING_ENCODER);
         configureMotor(frontRight, DcMotor.RunMode.RUN_USING_ENCODER);
         configureMotor(backLeft, DcMotor.RunMode.RUN_USING_ENCODER);
@@ -72,6 +83,9 @@ public class Robot {
 
         configureMotor(outtakeLeft, DcMotor.RunMode.RUN_USING_ENCODER);
         configureMotor(outtakeRight, DcMotor.RunMode.RUN_USING_ENCODER);
+
+        configureMotor(transferLeft, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        configureMotor(transferRight, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         configureMotor(odoParallel, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         configureMotor(odoPerpendicular, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -83,6 +97,9 @@ public class Robot {
         servo25_1.setDirection(Config.REVERSE_SERVO_25_1 ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
         servo25_2.setDirection(Config.REVERSE_SERVO_25_2 ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
         servo25_3.setDirection(Config.REVERSE_SERVO_25_3 ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
+
+        blockerLeft.setDirection(Config.REVERSE_BLOCKER_LEFT ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
+        blockerRight.setDirection(Config.REVERSE_BLOCKER_RIGHT ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
 
         servos[0] = axon1;
         servos[1] = axon2;
@@ -98,6 +115,7 @@ public class Robot {
         )));
         imu.resetYaw();
         setServoPositions(Config.HOME);
+        setBlockerPositions(Config.BLOCKER_BLOCK_POS);   // start with gates closed
         clearBulkCache();
     }
 
@@ -133,6 +151,18 @@ public class Robot {
         }
     }
 
+    public void setBlockerPositions(double position) {
+        double p = Range.clip(position, Config.SERVO_MIN, Config.SERVO_MAX);
+        blockerLeft.setPosition(p);
+        blockerRight.setPosition(p);
+    }
+
+    public void setTransferPower(double power) {
+        double p = Range.clip(power, -1, 1);
+        transferLeft.setPower(p);
+        transferRight.setPower(p);
+    }
+
     public void stopAll() {
         frontLeft.setPower(0);
         frontRight.setPower(0);
@@ -140,6 +170,8 @@ public class Robot {
         backRight.setPower(0);
         outtakeLeft.setPower(0);
         outtakeRight.setPower(0);
+        transferLeft.setPower(0);
+        transferRight.setPower(0);
     }
 
     private <T> T required(HardwareMap hardwareMap, Class<? extends T> type, String name) {

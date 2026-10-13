@@ -13,11 +13,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Config.Robot;
-import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
-import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Drive;
-import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Intake;
-import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Drive;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Intake;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
 
 @Autonomous(name = "BIOBUZZ Auto - Pedro 3", group = "Competition")
 public class Auto extends LinearOpMode {
@@ -64,6 +64,7 @@ public class Auto extends LinearOpMode {
         limelight.start();
 
         intake.setHomePosition();
+        transfer.hold();
         telemetry.addLine("AUTO READY (PEDRO 3)");
         telemetry.update();
 
@@ -76,6 +77,7 @@ public class Auto extends LinearOpMode {
         park();
 
         limelight.stop();
+        transfer.hold();
         robot.stopAll();
     }
 
@@ -123,8 +125,18 @@ public class Auto extends LinearOpMode {
         holdMechanism(250);
         if (parkWindowOpen()) return;
         transfer.setScorePosition();
+
+        // Spin up with gates closed, then open gates and run the transfer motors to feed
         shooter.setPower(1.0);
+        transfer.hold();
+        holdMechanism(400);
+        if (parkWindowOpen()) {
+            transfer.hold();
+            return;
+        }
+        transfer.feed();
         holdMechanism(650);
+        transfer.hold();
         shooter.setPower(0);
         holdMechanism(200);
         if (parkWindowOpen()) return;
@@ -145,6 +157,7 @@ public class Auto extends LinearOpMode {
 
 
         shooter.setPower(0);
+        transfer.hold();
         intake.setHomePosition();
         drive.stop();
 

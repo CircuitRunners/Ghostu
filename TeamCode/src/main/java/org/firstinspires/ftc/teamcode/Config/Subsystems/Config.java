@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.Config.Subsystems;
 public class Config {
     public static final String FL = "fl", FR = "fr", BL = "bl", BR = "br";
     public static final String OUTTAKE_LEFT = "shootL", OUTTAKE_RIGHT = "shootR";
+    public static final String TRANSFER_LEFT = "transferL", TRANSFER_RIGHT = "transferR";
+    public static final String BLOCKER_LEFT = "blockL", BLOCKER_RIGHT = "blockR";
     public static final String ODO_PARALLEL = "odoPar", ODO_PERPENDICULAR = "odoPerp";
     public static final String AXON_1 = "ax1", AXON_2 = "ax2", AXON_3 = "ax3", AXON_4 = "ax4";
     public static final String SERVO_25_1 = "s1", SERVO_25_2 = "s2", SERVO_25_3 = "s3";
@@ -12,6 +14,10 @@ public class Config {
     public static final boolean REVERSE_FL = true, REVERSE_FR = false;
     public static final boolean REVERSE_BL = true, REVERSE_BR = false;
     public static final boolean REVERSE_OUTTAKE_LEFT = false, REVERSE_OUTTAKE_RIGHT = true;
+    // Transfer motors are mounted facing opposite ways, so one is reversed:
+    // positive power then feeds game pieces toward the shooter on both.
+    public static final boolean REVERSE_TRANSFER_LEFT = false, REVERSE_TRANSFER_RIGHT = true;
+    public static final boolean REVERSE_BLOCKER_LEFT = false, REVERSE_BLOCKER_RIGHT = false;
     public static final boolean REVERSE_AXON_1 = false, REVERSE_AXON_2 = false;
     public static final boolean REVERSE_AXON_3 = false, REVERSE_AXON_4 = false;
     public static final boolean REVERSE_SERVO_25_1 = false, REVERSE_SERVO_25_2 = false;
@@ -23,6 +29,12 @@ public class Config {
     public static final double[] INTAKE   = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};
     public static final double[] TRANSFER = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};
     public static final double[] SCORE    = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};
+
+
+    // Transfer blockers (gates that hold game pieces back from the shooter)
+    public static final double BLOCKER_BLOCK_POS = 0.5;
+    public static final double BLOCKER_OPEN_POS = 0.0;   // TODO: tune on robot, open position unknown
+    public static final double TRANSFER_POWER = 1.0;
 
 
     public static final double DRIVE_DEADBAND = 0.05;
@@ -71,4 +83,4 @@ public class Config {
     public static final double OBSTACLE_MIN_SPEED_IN_S = 2.0;
     public static final double OBSTACLE_STALL_MS = 300;
     public static final double OBSTACLE_RELEASE_CMD = 0.10;
-    }
+}

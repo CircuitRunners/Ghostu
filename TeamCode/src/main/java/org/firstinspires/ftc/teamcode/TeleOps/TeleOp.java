@@ -4,14 +4,13 @@ import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
-import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Drive;
-import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Intake;
-import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Drive;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Intake;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.FieldFence;
 import org.firstinspires.ftc.teamcode.Localizer;
 import org.firstinspires.ftc.teamcode.ObstacleAvoidance;
 import org.firstinspires.ftc.teamcode.Config.Robot;
-import org.firstinspires.ftc.teamcode.Transfer;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "BIOBUZZ TeleOp", group = "Competition")
 public class TeleOp extends OpMode {
@@ -27,6 +26,7 @@ public class TeleOp extends OpMode {
     private ObstacleAvoidance avoidance;
 
     private Preset currentPreset = Preset.HOME;
+    private String transferState = "HOLD";
     private boolean lastStart, lastA, lastB, lastX, lastY, lastDpadUp, lastDpadDown;
     private boolean lastBack1, lastX1, lastY1;
 
@@ -44,6 +44,7 @@ public class TeleOp extends OpMode {
         telemetry.addLine("BIOBUZZ READY");
         telemetry.addLine("P1: BACK = fence on/off | X = obstacle avoid on/off");
         telemetry.addLine("P1: Y = re-seed pose at start spot | hold LT = override both");
+        telemetry.addLine("P2: hold RB = feed (gates open) | hold LB = unjam (gates closed)");
         telemetry.update();
     }
 
@@ -52,6 +53,7 @@ public class TeleOp extends OpMode {
         robot.resetHeading();
         intake.setHomePosition();
         shooter.setPower(0);
+        transfer.hold();
     }
 
     private void reseedPose() {
@@ -119,6 +121,18 @@ public class TeleOp extends OpMode {
         lastX = gamepad2.x;
         lastY = gamepad2.y;
 
+        // Transfer: hold RB to open gates and feed, hold LB to run backward with gates closed
+        if (gamepad2.right_bumper) {
+            transfer.feed();
+            transferState = "FEED";
+        } else if (gamepad2.left_bumper) {
+            transfer.unjam();
+            transferState = "UNJAM";
+        } else {
+            transfer.hold();
+            transferState = "HOLD";
+        }
+
         if (gamepad2.dpad_up && !lastDpadUp) shooter.setPower(1.0);
         if (gamepad2.dpad_down && !lastDpadDown) shooter.setPower(0.0);
         lastDpadUp = gamepad2.dpad_up;
@@ -131,6 +145,7 @@ public class TeleOp extends OpMode {
         telemetry.addData("Heading Deg", "%.1f", Math.toDegrees(robot.getHeadingRadians()));
         telemetry.addData("Drive Mode", robotCentric ? "Robot" : "Field");
         telemetry.addData("Preset", currentPreset);
+        telemetry.addData("Transfer", transferState);
         telemetry.addData("Shooter Power", "%.2f / %.2f", shooter.getCommandedPower(), shooter.getTargetPower());
         telemetry.addData("Shooter Current", "%.2f A", shooter.getCurrentAmps());
         telemetry.addData("Pose X/Y/H", "%.1f / %.1f / %.1f", pose.x(), pose.y(), Math.toDegrees(pose.heading()));
