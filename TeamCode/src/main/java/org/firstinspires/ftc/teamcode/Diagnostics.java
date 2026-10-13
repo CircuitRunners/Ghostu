@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.Config.Robot;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
+
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "BIOBUZZ Hardware Diagnostics", group = "Diagnostics")
 public class Diagnostics extends LinearOpMode {
     private final Robot robot = new Robot();

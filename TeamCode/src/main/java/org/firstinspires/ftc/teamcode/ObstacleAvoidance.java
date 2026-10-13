@@ -2,6 +2,9 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Config.Robot;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
+
 
 public class ObstacleAvoidance {
     private final Robot robot;

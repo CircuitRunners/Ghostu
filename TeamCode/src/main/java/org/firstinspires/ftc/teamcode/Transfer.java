@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import org.firstinspires.ftc.teamcode.Config.Robot;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
+
 public class Transfer {
     private final Robot robot;
 

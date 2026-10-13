@@ -1,7 +1,17 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TeleOps;
 
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Drive;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Intake;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.FieldFence;
+import org.firstinspires.ftc.teamcode.Localizer;
+import org.firstinspires.ftc.teamcode.ObstacleAvoidance;
+import org.firstinspires.ftc.teamcode.Config.Robot;
+import org.firstinspires.ftc.teamcode.Transfer;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "BIOBUZZ TeleOp", group = "Competition")
 public class TeleOp extends OpMode {

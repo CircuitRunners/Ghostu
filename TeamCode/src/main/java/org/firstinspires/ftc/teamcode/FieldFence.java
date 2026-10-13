@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
+
 
 public class FieldFence {
     private boolean enabled = Config.FENCE_ENABLED_DEFAULT;

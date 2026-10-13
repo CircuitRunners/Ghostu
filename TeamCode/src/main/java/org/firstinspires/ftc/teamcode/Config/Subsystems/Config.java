@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Config.Subsystems;
 
 public class Config {
     public static final String FL = "fl", FR = "fr", BL = "bl", BR = "br";

@@ -12,6 +12,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.Config.Robot;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Drive;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Intake;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 @Autonomous(name = "BIOBUZZ Auto - Pedro 3", group = "Competition")

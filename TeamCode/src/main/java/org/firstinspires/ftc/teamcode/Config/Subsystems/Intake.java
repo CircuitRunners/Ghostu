@@ -1,4 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Config.Subsystems;
+
+import org.firstinspires.ftc.teamcode.Config.Robot;
 
 public class Intake {
     private final Robot robot;
