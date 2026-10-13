@@ -32,14 +32,14 @@ public class Constants {
 
     public static TwoWheelConfig localizerConfig = new TwoWheelConfig(
             c -> {
-                // PASTE AutoTune OUTPUT HERE
+
             }
     );
 
-    // Foresight (path-following algorithm): paste the values from the Foresight tuner here.
+
     public static ForesightConfig foresightConfig = new ForesightConfig(
             c -> {
-                // PASTE Foresight tuner OUTPUT HERE
+
             }
     );
 
