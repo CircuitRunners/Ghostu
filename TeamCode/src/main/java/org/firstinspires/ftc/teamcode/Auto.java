@@ -29,11 +29,17 @@ public class Auto extends LinearOpMode {
     private static final double AUTO_MAX_TRANSLATION_POWER = 0.70;
 
 
+    private static final double PARK_START_SEC = Config.AUTO_LENGTH_SEC - Config.AUTO_PARK_WINDOW_SEC;
+
+    private final ElapsedTime autoTimer = new ElapsedTime();
+
+
     private final PoseFactory p = PoseFactory.degrees();
 
     private final Pose startPose = p.of(0, 0, 0);
     private final Pose intakePose = p.of(0, 24, 0);
     private final Pose scorePose = p.of(0, 36, 0);
+    private final Pose parkPose = p.of(Config.AUTO_PARK_X_IN, Config.AUTO_PARK_Y_IN, Config.AUTO_PARK_HEADING_DEG);
 
     @Override
     public void runOpMode() {
@@ -59,10 +65,18 @@ public class Auto extends LinearOpMode {
         waitForStart();
         if (isStopRequested()) return;
 
+        autoTimer.reset();
+
         runRoutine();
+        park();
 
         limelight.stop();
         robot.stopAll();
+    }
+
+
+    private boolean parkWindowOpen() {
+        return autoTimer.seconds() >= PARK_START_SEC;
     }
 
     private Path driveToScore() {
@@ -76,10 +90,11 @@ public class Auto extends LinearOpMode {
         intake.setIntakePosition();
         holdMechanism(250);
         shooter.setPower(0);
+        if (parkWindowOpen()) return;
 
 
         follower.follow(driveToScore());
-        while (opModeIsActive() && follower.isBusy()) {
+        while (opModeIsActive() && follower.isBusy() && !parkWindowOpen()) {
             robot.clearBulkCache();
             follower.update();
             shooter.update();
@@ -87,24 +102,66 @@ public class Auto extends LinearOpMode {
             Pose currentPose = follower.pose();
             telemetry.addData("X / Y", "%.2f / %.2f", currentPose.x(), currentPose.y());
             telemetry.addData("Heading", "%.1f", Math.toDegrees(currentPose.heading()));
+            telemetry.addData("Auto time", "%.1f", autoTimer.seconds());
             telemetry.update();
         }
 
         follower.stop();
+        if (parkWindowOpen()) return;
 
 
         alignWithLimelight(0.0, 0.0, 2000);
+        if (parkWindowOpen()) return;
 
 
         transfer.setTransferPosition();
         holdMechanism(250);
+        if (parkWindowOpen()) return;
         transfer.setScorePosition();
         shooter.setPower(1.0);
         holdMechanism(650);
         shooter.setPower(0);
         holdMechanism(200);
+        if (parkWindowOpen()) return;
         intake.setHomePosition();
         holdMechanism(200);
+    }
+
+
+    private void park() {
+
+        while (Config.AUTO_WAIT_FOR_PARK_WINDOW && opModeIsActive() && !parkWindowOpen()) {
+            robot.clearBulkCache();
+            follower.update();
+            shooter.update();
+            idle();
+        }
+        if (!opModeIsActive()) return;
+
+
+        shooter.setPower(0);
+        intake.setHomePosition();
+        drive.stop();
+
+        Pose current = follower.pose();
+        follower.follow(Paths.path(
+                Paths.line(current, parkPose).linear(current, parkPose)
+        ));
+
+        while (opModeIsActive() && follower.isBusy()) {
+            robot.clearBulkCache();
+            follower.update();
+            shooter.update();
+
+            telemetry.addData("State", "PARKING");
+            telemetry.addData("Auto time", "%.1f", autoTimer.seconds());
+            telemetry.update();
+        }
+
+        follower.stop();
+        shooter.stop();
+        telemetry.addData("State", "PARKED");
+        telemetry.update();
     }
 
     private boolean alignWithLimelight(double targetTx, double targetTy, long timeoutMs) {
@@ -114,9 +171,9 @@ public class Auto extends LinearOpMode {
         double KpAim = 0.04;
         double KpDistance = 0.06;
 
-        while (opModeIsActive() && timer.milliseconds() < timeoutMs) {
+        while (opModeIsActive() && timer.milliseconds() < timeoutMs && !parkWindowOpen()) {
             robot.clearBulkCache();
-            follower.update(); // keeps pose tracking alive
+            follower.update();
             shooter.update();
 
             LLResult result = limelight.getLatestResult();
@@ -154,7 +211,7 @@ public class Auto extends LinearOpMode {
     private void holdMechanism(long milliseconds) {
         ElapsedTime timer = new ElapsedTime();
         timer.reset();
-        while (opModeIsActive() && timer.milliseconds() < milliseconds) {
+        while (opModeIsActive() && timer.milliseconds() < milliseconds && !parkWindowOpen()) {
             robot.clearBulkCache();
             follower.update();
             shooter.update();

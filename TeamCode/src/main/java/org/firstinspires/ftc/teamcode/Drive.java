@@ -10,12 +10,18 @@ public class Drive {
         this.robot = robot;
     }
 
-    public void drive(double strafe, double forward, double turn, boolean robotCentric, double scale) {
+
+    public double[] toRobotFrame(double strafe, double forward, boolean robotCentric) {
         double heading = robotCentric ? 0.0 : robot.getHeadingRadians();
         double cos = Math.cos(-heading);
         double sin = Math.sin(-heading);
-        double fieldStrafe = strafe * cos - forward * sin;
-        double fieldForward = strafe * sin + forward * cos;
+        return new double[]{strafe * cos - forward * sin, strafe * sin + forward * cos};
+    }
+
+    public void drive(double strafe, double forward, double turn, boolean robotCentric, double scale) {
+        double[] cmd = toRobotFrame(strafe, forward, robotCentric);
+        double fieldStrafe = cmd[0];
+        double fieldForward = cmd[1];
 
         fieldStrafe = applyDeadband(fieldStrafe, Config.DRIVE_DEADBAND);
         fieldForward = applyDeadband(fieldForward, Config.DRIVE_DEADBAND);

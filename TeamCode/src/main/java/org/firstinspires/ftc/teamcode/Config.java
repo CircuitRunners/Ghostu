@@ -31,8 +31,44 @@ public class Config {
     public static final double DRIVE_RAMP_PER_LOOP = 0.1;
 
 
+    public static final boolean STRAFE_POSITIVE_RIGHT = true;
+
+
     public static final double OUTTAKE_MAX_POWER = 1.0;
     public static final double OUTTAKE_SLEW_PER_LOOP = 0.05;
     public static final double OUTTAKE_STALL_TIME_MS = 500;
     public static final double OUTTAKE_CURRENT_LIMIT_AMPS = 8.0;
-}
+
+
+
+    public static final double AUTO_LENGTH_SEC = 30.0;
+    public static final double AUTO_PARK_WINDOW_SEC = 10.0;
+
+    public static final boolean AUTO_WAIT_FOR_PARK_WINDOW = false;
+
+    public static final double AUTO_PARK_X_IN = 24, AUTO_PARK_Y_IN = 36, AUTO_PARK_HEADING_DEG = 0;
+
+
+
+    public static final boolean FENCE_ENABLED_DEFAULT = true;
+    public static final double FIELD_MIN_IN = 0.0, FIELD_MAX_IN = 144.0;
+    public static final double ROBOT_RADIUS_IN = 9.0;
+    public static final double FENCE_SLOW_DIST_IN = 12.0;
+
+
+    public static final double TELEOP_START_X_IN = 72, TELEOP_START_Y_IN = 9, TELEOP_START_HEADING_DEG = 90;
+
+
+    public static final double[][] KEEP_OUT_ZONES = {
+    };
+
+
+
+    public static final boolean OBSTACLE_AVOID_ENABLED_DEFAULT = true;
+
+    public static final double ODO_TICKS_PER_INCH = 505.0;
+    public static final double OBSTACLE_MIN_CMD = 0.35;
+    public static final double OBSTACLE_MIN_SPEED_IN_S = 2.0;
+    public static final double OBSTACLE_STALL_MS = 300;
+    public static final double OBSTACLE_RELEASE_CMD = 0.10;
+    }
