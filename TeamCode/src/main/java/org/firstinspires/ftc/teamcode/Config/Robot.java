@@ -1,25 +1,19 @@
 package org.firstinspires.ftc.teamcode.Config;
 
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
 
-import java.util.List;
-
 public class Robot {
-    public DcMotorEx frontLeft, frontRight, backLeft, backRight;
-    public DcMotorEx outtakeLeft, outtakeRight;
-    public DcMotorEx transferLeft, transferRight;
-    public DcMotorEx odoParallel, odoPerpendicular;
+    public DcMotor frontLeft, frontRight, backLeft, backRight;
+    public DcMotor outtakeLeft, outtakeRight;
+    public DcMotor transferLeft, transferRight;
 
     public Servo axon1, axon2, axon3, axon4;
     public Servo servo25_1, servo25_2, servo25_3;
@@ -27,43 +21,35 @@ public class Robot {
 
     public IMU imu;
     public ColorSensor color;
-    public List<LynxModule> hubs;
 
     public final Servo[] servos = new Servo[7];
 
+
     public void init(HardwareMap hardwareMap) {
-        hubs = hardwareMap.getAll(LynxModule.class);
-        for (LynxModule hub : hubs) {
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-        }
+        frontLeft = hardwareMap.get(DcMotor.class, Config.FL);
+        frontRight = hardwareMap.get(DcMotor.class, Config.FR);
+        backLeft = hardwareMap.get(DcMotor.class, Config.BL);
+        backRight = hardwareMap.get(DcMotor.class, Config.BR);
 
-        frontLeft = required(hardwareMap, DcMotorEx.class, Config.FL);
-        frontRight = required(hardwareMap, DcMotorEx.class, Config.FR);
-        backLeft = required(hardwareMap, DcMotorEx.class, Config.BL);
-        backRight = required(hardwareMap, DcMotorEx.class, Config.BR);
+        outtakeLeft = hardwareMap.get(DcMotor.class, Config.OUTTAKE_LEFT);
+        outtakeRight = hardwareMap.get(DcMotor.class, Config.OUTTAKE_RIGHT);
 
-        outtakeLeft = required(hardwareMap, DcMotorEx.class, Config.OUTTAKE_LEFT);
-        outtakeRight = required(hardwareMap, DcMotorEx.class, Config.OUTTAKE_RIGHT);
+        transferLeft = hardwareMap.get(DcMotor.class, Config.TRANSFER_LEFT);
+        transferRight = hardwareMap.get(DcMotor.class, Config.TRANSFER_RIGHT);
 
-        transferLeft = required(hardwareMap, DcMotorEx.class, Config.TRANSFER_LEFT);
-        transferRight = required(hardwareMap, DcMotorEx.class, Config.TRANSFER_RIGHT);
+        axon1 = hardwareMap.get(Servo.class, Config.AXON_1);
+        axon2 = hardwareMap.get(Servo.class, Config.AXON_2);
+        axon3 = hardwareMap.get(Servo.class, Config.AXON_3);
+        axon4 = hardwareMap.get(Servo.class, Config.AXON_4);
+        servo25_1 = hardwareMap.get(Servo.class, Config.SERVO_25_1);
+        servo25_2 = hardwareMap.get(Servo.class, Config.SERVO_25_2);
+        servo25_3 = hardwareMap.get(Servo.class, Config.SERVO_25_3);
 
-        odoParallel = required(hardwareMap, DcMotorEx.class, Config.ODO_PARALLEL);
-        odoPerpendicular = required(hardwareMap, DcMotorEx.class, Config.ODO_PERPENDICULAR);
+        blockerLeft = hardwareMap.get(Servo.class, Config.BLOCKER_LEFT);
+        blockerRight = hardwareMap.get(Servo.class, Config.BLOCKER_RIGHT);
 
-        axon1 = required(hardwareMap, Servo.class, Config.AXON_1);
-        axon2 = required(hardwareMap, Servo.class, Config.AXON_2);
-        axon3 = required(hardwareMap, Servo.class, Config.AXON_3);
-        axon4 = required(hardwareMap, Servo.class, Config.AXON_4);
-        servo25_1 = required(hardwareMap, Servo.class, Config.SERVO_25_1);
-        servo25_2 = required(hardwareMap, Servo.class, Config.SERVO_25_2);
-        servo25_3 = required(hardwareMap, Servo.class, Config.SERVO_25_3);
-
-        blockerLeft = required(hardwareMap, Servo.class, Config.BLOCKER_LEFT);
-        blockerRight = required(hardwareMap, Servo.class, Config.BLOCKER_RIGHT);
-
-        imu = required(hardwareMap, IMU.class, Config.IMU);
-        color = required(hardwareMap, ColorSensor.class, Config.COLOR);
+        imu = hardwareMap.get(IMU.class, Config.IMU);
+        color = hardwareMap.get(ColorSensor.class, Config.COLOR);
 
         frontLeft.setDirection(Config.REVERSE_FL ? DcMotor.Direction.REVERSE : DcMotor.Direction.FORWARD);
         frontRight.setDirection(Config.REVERSE_FR ? DcMotor.Direction.REVERSE : DcMotor.Direction.FORWARD);
@@ -76,19 +62,14 @@ public class Robot {
         transferLeft.setDirection(Config.REVERSE_TRANSFER_LEFT ? DcMotor.Direction.REVERSE : DcMotor.Direction.FORWARD);
         transferRight.setDirection(Config.REVERSE_TRANSFER_RIGHT ? DcMotor.Direction.REVERSE : DcMotor.Direction.FORWARD);
 
-        configureMotor(frontLeft, DcMotor.RunMode.RUN_USING_ENCODER);
-        configureMotor(frontRight, DcMotor.RunMode.RUN_USING_ENCODER);
-        configureMotor(backLeft, DcMotor.RunMode.RUN_USING_ENCODER);
-        configureMotor(backRight, DcMotor.RunMode.RUN_USING_ENCODER);
-
-        configureMotor(outtakeLeft, DcMotor.RunMode.RUN_USING_ENCODER);
-        configureMotor(outtakeRight, DcMotor.RunMode.RUN_USING_ENCODER);
-
-        configureMotor(transferLeft, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        configureMotor(transferRight, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        configureMotor(odoParallel, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        configureMotor(odoPerpendicular, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        configureMotor(frontLeft);
+        configureMotor(frontRight);
+        configureMotor(backLeft);
+        configureMotor(backRight);
+        configureMotor(outtakeLeft);
+        configureMotor(outtakeRight);
+        configureMotor(transferLeft);
+        configureMotor(transferRight);
 
         axon1.setDirection(Config.REVERSE_AXON_1 ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
         axon2.setDirection(Config.REVERSE_AXON_2 ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
@@ -114,23 +95,14 @@ public class Robot {
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
         )));
         imu.resetYaw();
+
         setServoPositions(Config.HOME);
-        setBlockerPositions(Config.BLOCKER_BLOCK_POS);   // start with gates closed
-        clearBulkCache();
+        setBlockerPositions(Config.BLOCKER_BLOCK_POS);
     }
 
-    public void clearBulkCache() {
-        if (hubs != null) {
-            for (LynxModule hub : hubs) {
-                hub.clearBulkCache();
-            }
-        }
-    }
-
-    private void configureMotor(DcMotorEx motor, DcMotor.RunMode mode) {
+    private void configureMotor(DcMotor motor) {
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motor.setMode(mode);
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor.setPower(0);
     }
 
@@ -143,24 +115,19 @@ public class Robot {
     }
 
     public void setServoPositions(double[] positions) {
-        if (positions.length != servos.length) {
-            throw new IllegalArgumentException("Expected 7 servo positions");
-        }
         for (int i = 0; i < servos.length; i++) {
-            servos[i].setPosition(Range.clip(positions[i], Config.SERVO_MIN, Config.SERVO_MAX));
+            servos[i].setPosition(positions[i]);
         }
     }
 
     public void setBlockerPositions(double position) {
-        double p = Range.clip(position, Config.SERVO_MIN, Config.SERVO_MAX);
-        blockerLeft.setPosition(p);
-        blockerRight.setPosition(p);
+        blockerLeft.setPosition(position);
+        blockerRight.setPosition(position);
     }
 
     public void setTransferPower(double power) {
-        double p = Range.clip(power, -1, 1);
-        transferLeft.setPower(p);
-        transferRight.setPower(p);
+        transferLeft.setPower(power);
+        transferRight.setPower(power);
     }
 
     public void stopAll() {
@@ -172,13 +139,5 @@ public class Robot {
         outtakeRight.setPower(0);
         transferLeft.setPower(0);
         transferRight.setPower(0);
-    }
-
-    private <T> T required(HardwareMap hardwareMap, Class<? extends T> type, String name) {
-        try {
-            return hardwareMap.get(type, name);
-        } catch (Exception e) {
-            throw new IllegalStateException("Missing hardware: " + name, e);
-        }
     }
 }

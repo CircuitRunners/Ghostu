@@ -13,12 +13,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Config.Robot;
+import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
 import org.firstinspires.ftc.teamcode.Config.Subsystems.Drive;
 import org.firstinspires.ftc.teamcode.Config.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Config.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Config.Subsystems.Transfer;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
-import org.firstinspires.ftc.teamcode.Config.Subsystems.Config;
 
 @Autonomous(name = "BIOBUZZ Auto - Pedro 3", group = "Competition")
 public class Auto extends LinearOpMode {
@@ -29,16 +29,6 @@ public class Auto extends LinearOpMode {
     private Shooter shooter;
     private Follower follower;
     private Limelight3A limelight;
-
-
-    private static final double AUTO_MAX_TURN_POWER = 0.55;
-    private static final double AUTO_MAX_TRANSLATION_POWER = 0.70;
-
-
-    private static final double PARK_START_SEC = Config.AUTO_LENGTH_SEC - Config.AUTO_PARK_WINDOW_SEC;
-
-    private final ElapsedTime autoTimer = new ElapsedTime();
-
 
     private final PoseFactory p = PoseFactory.degrees();
 
@@ -55,10 +45,8 @@ public class Auto extends LinearOpMode {
         transfer = new Transfer(robot);
         shooter = new Shooter(robot);
 
-
         follower = Constants.create(hardwareMap);
         follower.setPose(startPose);
-
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0);
@@ -72,8 +60,6 @@ public class Auto extends LinearOpMode {
         waitForStart();
         if (isStopRequested()) return;
 
-        autoTimer.reset();
-
         runRoutine();
         park();
 
@@ -82,159 +68,80 @@ public class Auto extends LinearOpMode {
         robot.stopAll();
     }
 
-
-    private boolean parkWindowOpen() {
-        return autoTimer.seconds() >= PARK_START_SEC;
-    }
-
-    private Path driveToScore() {
-        return Paths.path(
-                Paths.line(startPose, intakePose).linear(startPose, intakePose),
-                Paths.line(intakePose, scorePose).linear(intakePose, scorePose)
-        );
-    }
-
     private void runRoutine() {
         intake.setIntakePosition();
-        holdMechanism(250);
-        shooter.setPower(0);
-        if (parkWindowOpen()) return;
+        pause(250);
 
-
-        follower.follow(driveToScore());
-        while (opModeIsActive() && follower.isBusy() && !parkWindowOpen()) {
-            robot.clearBulkCache();
+        follower.follow(Paths.path(
+                Paths.line(startPose, intakePose).linear(startPose, intakePose),
+                Paths.line(intakePose, scorePose).linear(intakePose, scorePose)
+        ));
+        while (opModeIsActive() && follower.isBusy()) {
             follower.update();
-            shooter.update();
-
-            Pose currentPose = follower.pose();
-            telemetry.addData("X / Y", "%.2f / %.2f", currentPose.x(), currentPose.y());
-            telemetry.addData("Heading", "%.1f", Math.toDegrees(currentPose.heading()));
-            telemetry.addData("Auto time", "%.1f", autoTimer.seconds());
-            telemetry.update();
         }
-
         follower.stop();
-        if (parkWindowOpen()) return;
 
-
-        alignWithLimelight(0.0, 0.0, 2000);
-        if (parkWindowOpen()) return;
-
+        alignWithLimelight(2000);
 
         transfer.setTransferPosition();
-        holdMechanism(250);
-        if (parkWindowOpen()) return;
+        pause(250);
         transfer.setScorePosition();
 
-        // Spin up with gates closed, then open gates and run the transfer motors to feed
         shooter.setPower(1.0);
         transfer.hold();
-        holdMechanism(400);
-        if (parkWindowOpen()) {
-            transfer.hold();
-            return;
-        }
+        pause(400);
         transfer.feed();
-        holdMechanism(650);
+        pause(650);
         transfer.hold();
         shooter.setPower(0);
-        holdMechanism(200);
-        if (parkWindowOpen()) return;
+        pause(200);
+
         intake.setHomePosition();
-        holdMechanism(200);
+        pause(200);
     }
 
-
     private void park() {
-
-        while (Config.AUTO_WAIT_FOR_PARK_WINDOW && opModeIsActive() && !parkWindowOpen()) {
-            robot.clearBulkCache();
-            follower.update();
-            shooter.update();
-            idle();
-        }
-        if (!opModeIsActive()) return;
-
-
-        shooter.setPower(0);
-        transfer.hold();
-        intake.setHomePosition();
-        drive.stop();
-
         Pose current = follower.pose();
         follower.follow(Paths.path(
                 Paths.line(current, parkPose).linear(current, parkPose)
         ));
-
         while (opModeIsActive() && follower.isBusy()) {
-            robot.clearBulkCache();
             follower.update();
-            shooter.update();
-
-            telemetry.addData("State", "PARKING");
-            telemetry.addData("Auto time", "%.1f", autoTimer.seconds());
-            telemetry.update();
         }
-
         follower.stop();
-        shooter.stop();
+
         telemetry.addData("State", "PARKED");
         telemetry.update();
     }
 
-    private boolean alignWithLimelight(double targetTx, double targetTy, long timeoutMs) {
+    private void alignWithLimelight(long timeoutMs) {
+        double kAim = 0.04;
+        double kDistance = 0.06;
         ElapsedTime timer = new ElapsedTime();
-        timer.reset();
 
-        double KpAim = 0.04;
-        double KpDistance = 0.06;
-
-        while (opModeIsActive() && timer.milliseconds() < timeoutMs && !parkWindowOpen()) {
-            robot.clearBulkCache();
-            follower.update();
-            shooter.update();
-
+        while (opModeIsActive() && timer.milliseconds() < timeoutMs) {
             LLResult result = limelight.getLatestResult();
 
             if (result != null && result.isValid()) {
-                double tx = result.getTx();
-                double ty = result.getTy();
+                double headingError = -result.getTx();
+                double distanceError = -result.getTy();
 
-                double headingError = targetTx - tx;
-                double distanceError = targetTy - ty;
+                if (Math.abs(headingError) < 1.5 && Math.abs(distanceError) < 1.5) break;
 
-                if (Math.abs(headingError) < 1.5 && Math.abs(distanceError) < 1.5) {
-                    drive.stop();
-                    return true;
-                }
-
-                double turn = Range.clip(headingError * KpAim, -AUTO_MAX_TURN_POWER, AUTO_MAX_TURN_POWER);
-                double forward = Range.clip(distanceError * KpDistance, -AUTO_MAX_TRANSLATION_POWER, AUTO_MAX_TRANSLATION_POWER);
-
+                double turn = Range.clip(headingError * kAim, -0.55, 0.55);
+                double forward = Range.clip(distanceError * kDistance, -0.7, 0.7);
                 drive.drive(0, forward, -turn, false, 1.0);
-
-                telemetry.addData("Limelight", "Tracking target");
-                telemetry.addData("tx / ty", "%.2f / %.2f", tx, ty);
             } else {
                 drive.stop();
-                telemetry.addData("Limelight", "Searching for target...");
             }
-            telemetry.update();
         }
-
         drive.stop();
-        return false;
     }
 
-    private void holdMechanism(long milliseconds) {
+    private void pause(long milliseconds) {
         ElapsedTime timer = new ElapsedTime();
-        timer.reset();
-        while (opModeIsActive() && timer.milliseconds() < milliseconds && !parkWindowOpen()) {
-            robot.clearBulkCache();
+        while (opModeIsActive() && timer.milliseconds() < milliseconds) {
             follower.update();
-            shooter.update();
-            idle();
         }
     }
 }

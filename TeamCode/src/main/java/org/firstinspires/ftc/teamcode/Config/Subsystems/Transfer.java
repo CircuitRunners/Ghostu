@@ -9,7 +9,6 @@ public class Transfer {
         this.robot = robot;
     }
 
-    // Arm/servo presets (unchanged)
     public void setTransferPosition() {
         robot.setServoPositions(Config.TRANSFER);
     }
@@ -18,7 +17,6 @@ public class Transfer {
         robot.setServoPositions(Config.SCORE);
     }
 
-    // Blocker gates
     public void block() {
         robot.setBlockerPositions(Config.BLOCKER_BLOCK_POS);
     }
@@ -27,25 +25,20 @@ public class Transfer {
         robot.setBlockerPositions(Config.BLOCKER_OPEN_POS);
     }
 
-    // Transfer motors (positive = toward shooter; the opposite-direction mounting
-    // is handled by Config.REVERSE_TRANSFER_*)
     public void setPower(double power) {
-        robot.setTransferPower(power * Config.TRANSFER_POWER);
+        robot.setTransferPower(power);
     }
 
-    /** Gates open, motors feeding forward. */
     public void feed() {
         open();
         setPower(1.0);
     }
 
-    /** Gates closed, motors backward to clear a jam. */
     public void unjam() {
         block();
         setPower(-1.0);
     }
 
-    /** Gates closed, motors off. */
     public void hold() {
         block();
         setPower(0);
